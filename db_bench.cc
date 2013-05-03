@@ -1,4 +1,5 @@
 // project
+#include "monitor.h"
 #include "slice.h"
 #include "random.h"
 #include "histogram.h"
@@ -37,6 +38,8 @@ static const char* FLAGS_benchmarks =
 ;
 
 
+volatile int g_exit = 0;
+
 template <typename T>
 class scoped_ptr {
  public:
@@ -68,6 +71,8 @@ static int FLAGS_scan_threads = 0;
 //FLAGS_db in {"beansdb", "fdb"}
 static const char* FLAGS_db = "beansdb";
 
+
+
 void PrintFlags() {
   printf("------------------------------------------------------\n");
   printf("FLAGS_benchmarks = %s\n", FLAGS_benchmarks);
@@ -88,17 +93,6 @@ inline char* string_as_array(std::string* str) {
   return str->empty() ? NULL : &*str->begin();
 }
 
-static Slice TrimSpace(Slice s) {
-  size_t start = 0;
-  while (start < s.size() && isspace(s[start])) {
-    start++;
-  }
-  size_t limit = s.size();
-  while (limit > start && isspace(s[limit-1])) {
-    limit--;
-  }
-  return Slice(s.data() + start, limit - start);
-}
 
 static void AppendWithSpace(std::string* str, Slice msg) {
   if (msg.empty()) return;
@@ -553,6 +547,10 @@ class Benchmark {
         RunBenchMark(FLAGS_num_threads, Slice(functions[j]), method);
       }
     }
+
+    g_exit = 1;
+    fprintf(stdout, "RUN TEST DONE\n");
+    fflush(stdout);
   }
 
  private:
@@ -640,7 +638,7 @@ class Benchmark {
       value[i] = 'a' + i % 26;
     }
 
-    int bytes = 0;
+    int64_t bytes = 0;
 
     int step = FLAGS_num / FLAGS_num_threads;
     int start = step * thread->tid;
@@ -885,6 +883,19 @@ void TEST_BEANSDB() {
   printf("test passed\n");
 }
 
+void* StatsThread(void* args) {
+  FreeMonitor free("free.txt");
+  Monitor memory("memory.txt");
+
+  while (g_exit == 0) {
+    free.StatFree();
+    memory.StatMemory();
+    sleep(1);
+  }
+  return (void*) NULL;
+
+}
+
 int main(int argc, char* argv[]) {
   int n;
   char junk;
@@ -924,18 +935,24 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  pthread_t tid;
+  pthread_create(&tid, NULL, StatsThread, NULL);
   if (strcmp(FLAGS_db, "beansdb") == 0) {
     DB* db = new Beansdb();
     //boost::scoped_ptr<DB> scoped_db(db);
     scoped_ptr<DB> scoped_db(db);
     Benchmark benchmark(db);
     benchmark.Run();
+    g_exit = 1;
+    pthread_join(tid, NULL);
   } else if (strcmp(FLAGS_db, "fdb") == 0) {
     DB* db = new FileSystemDB;
     //boost::scoped_ptr<DB> scoped_db(db);
     scoped_ptr<DB> scoped_db(db);
     Benchmark benchmark(db);
     benchmark.Run();
+    g_exit = 1;
+    pthread_join(tid, NULL);
   } else {
     fprintf(stderr, "FLAGS_db must in ['beansdb', 'fdb']\n");
   }
