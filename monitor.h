@@ -140,8 +140,8 @@ class Monitor {
       Write();
     }
 
-    const int kVirtIndex = 22;
-    const int kResIndex = 23;
+    // const int kVirtIndex = 22;
+    // const int kResIndex = 23;
     pid_t pid = getpid();
     char fname[256];
     snprintf(fname, sizeof(fname), "/proc/%d/statm", pid);

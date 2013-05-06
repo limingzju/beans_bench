@@ -501,7 +501,8 @@ struct ThreadState {
 
   ThreadState(int index)
       : tid(index),
-      rand(1000 + index) {
+      rand(static_cast<int>(time(NULL)))
+      /* rand(1000 + index) */{
       }
 };
 
@@ -599,6 +600,7 @@ class Benchmark {
     //    fprintf(stdout, "Keys:        %d bytes each\n", kKeySize);
     //    fprintf(stdout, "Valuees:     %d bytes each\n", FLAGS_value_size);
     //    fprintf(stdout, "Entries:     %d\n", FLAGS_num);
+    fflush(stdout);
   }
 
   void PrintEnviroment() {
