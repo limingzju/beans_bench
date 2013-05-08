@@ -98,8 +98,8 @@ class Monitor {
  private:
   struct MemStat{
     time_t now;
-    int vm_size;
-    int res_size;
+    int64_t vm_size;
+    int64_t res_size;
   };
 
   std::vector<MemStat> mem_stats_;
@@ -123,7 +123,7 @@ class Monitor {
         return;
       }
       for (size_t i = 0; i != mem_stats_.size(); i++) {
-        fprintf(fstats, "%ld\t%d\t%d\n", mem_stats_[i].now, mem_stats_[i].vm_size, mem_stats_[i].res_size);
+        fprintf(fstats, "%ld\t%ld\t%ld\n", mem_stats_[i].now, mem_stats_[i].vm_size, mem_stats_[i].res_size);
       }
       fclose(fstats);
       mem_stats_.clear();
@@ -161,9 +161,9 @@ class Monitor {
     fclose(f);
 
 
-    int vm_size = vm_page * page_size_;
+    int64_t vm_size = vm_page * page_size_;
     //int vm_size = vm_page;
-    int res_size = res_page * page_size_;
+    int64_t res_size = res_page * page_size_;
     //int res_size = res_page;
 
     MemStat memstat;
