@@ -424,8 +424,8 @@ class Stats {
       double micros = now - last_op_finish_;
       hist_.Add(micros);
       if (micros > 20000) {
-        fprintf(stderr, "long op: %.1f micros%30s\r", micros, "");
-        fflush(stderr);
+        fprintf(stderr, "long op: %.1f micros%30s\n", micros, "");
+//        fflush(stderr);
       }
       last_op_finish_ = now;
     }
@@ -439,8 +439,8 @@ class Stats {
       else if (next_report_ < 100000) next_report_ += 10000;
       else if (next_report_ < 500000) next_report_ += 50000;
       else                            next_report_ += 100000;
-      fprintf(stderr, "... finished %d ops%30s\r", done_, "");
-      fflush(stderr);
+      fprintf(stderr, "... finished %d ops%30s\n", done_, "");
+//      fflush(stderr);
     }
   }
 
@@ -706,21 +706,19 @@ class Benchmark {
             break;
           }
         }
-        for (int i = start; i < end; i++) {
-          char key[100];
-          snprintf(key, sizeof(key), "%16d", i);
-          Slice skey(key);
-          ASSERT_TRUE(db_->Put(skey, Slice(value)));
-          bytes += skey.size() + FLAGS_value_size;
-          thread->stats.FinishedSingleOp();
-        }
+        int k = thread->rand.Next() % FLAGS_num;
+        char key[100];
+        snprintf(key, sizeof(key), "%016d", k);
+        Slice skey(key);
+        ASSERT_TRUE(db_->Put(skey, Slice(value)));
+        bytes += skey.size() + FLAGS_value_size;
+        thread->stats.FinishedSingleOp();
       }
       thread->stats.AddBytes(bytes);
     } else {
       // Do read
       ReadRandom(thread);
     }
-
   }
 
   void ReadHot(ThreadState* thread) {
@@ -886,8 +884,12 @@ void TEST_BEANSDB() {
 }
 
 void* StatsThread(void* args) {
-  FreeMonitor free("free.txt");
-  Monitor memory("memory.txt");
+  int32_t t = static_cast<int32_t>(time(NULL));
+  char name[256];
+  snprintf(name, sizeof(name), "%d_%s_%s_%s", t, FLAGS_db, FLAGS_benchmarks, "free.txt");
+  FreeMonitor free(name);
+  snprintf(name, sizeof(name), "%d_%s_%s_%s", t, FLAGS_db, FLAGS_benchmarks, "memory.txt");
+  Monitor memory(name);
 
   while (g_exit == 0) {
     free.StatFree();

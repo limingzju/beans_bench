@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <inttypes.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
@@ -123,7 +125,8 @@ class Monitor {
         return;
       }
       for (size_t i = 0; i != mem_stats_.size(); i++) {
-        fprintf(fstats, "%ld\t%ld\t%ld\n", mem_stats_[i].now, mem_stats_[i].vm_size, mem_stats_[i].res_size);
+        int64_t _now = static_cast<int64_t>(mem_stats_[i].now);
+        fprintf(fstats, "%"PRId64"\t%"PRId64"\t%"PRId64"\n", _now, mem_stats_[i].vm_size, mem_stats_[i].res_size);
       }
       fclose(fstats);
       mem_stats_.clear();

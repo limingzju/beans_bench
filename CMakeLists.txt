@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 #add_definitions(" -Wall -Wno-sign-compare -Werror -O2 ")
 #add_definitions(" -Wall -Wno-sign-compare -O2 ")
 #add_definitions("-Wall -g -fpermissive")
-add_definitions("-Wall -O2 -D_FILE_OFFSET_BITS=64")
+add_definitions("-Wall -O2 -D_FILE_OFFSET_BITS=64 -D__STDC_FORMAT_MACROS ")
 #set(CMAKE_C_COMPILER "g++")
 add_library(beansdb bitcask.c codec.c diskmgr.c hstore.c record.c clock_gettime_stub.c crc32.c hint.c htree.c quicklz.c fnv1a.c)
 
