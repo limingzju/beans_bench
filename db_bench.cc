@@ -779,6 +779,10 @@ class Benchmark {
     if (name == "readwhilewriting") {
       const int write_thread_num = int(FLAGS_num_threads / (1 + FLAGS_read_write_ratio));
 //      const int read_thread_num = FLAGS_num_threads - write_thread_num;
+//
+//      for (int i = 0; i < n; i++) {
+//        arg[i].thread->stats.Report(name);
+//      }
 
       for (int i = 1; i < write_thread_num; i++) {
         arg[0].thread->stats.Merge(arg[i].thread->stats);
@@ -786,7 +790,7 @@ class Benchmark {
       printf("\n\n***Write Performance***\n");
       arg[0].thread->stats.Report(name);
 
-      for (int i = write_thread_num; i < n; i++) {
+      for (int i = write_thread_num + 1; i < n; i++) {
         arg[write_thread_num].thread->stats.Merge(arg[i].thread->stats);
       }
       printf("\n\n***Read Performance***\n");
