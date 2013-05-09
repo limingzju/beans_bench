@@ -176,17 +176,60 @@ bool RenameFile(const std::string& src, const std::string& target) {
 
 };
 
-uint32_t Hash(const char* data, size_t n) {
-  const static int FNV_32_PRIME = 0x01000193;
-  const static int FNV_32_INIT = 0x811c9dc5;
+#ifndef FALLTHROUGH_INTENDED
+#define FALLTHROUGH_INTENDED do { } while (0)
+#endif
 
-  uint32_t h = FNV_32_INIT;
-  for (size_t i = 0; i < n; i++) {
-    h ^= (uint32_t) data[i];
-    h *= FNV_32_PRIME;
+uint32_t DecodeFixed32(const char* ptr) {
+  uint32_t result;
+  memcpy(&result, ptr, sizeof(result));
+  return result;
+}
+uint32_t Hash(const char* data, size_t n/*, uint32_t seed*/) {
+  // Similar to murmur hash
+  uint32_t seed = 0;
+  const uint32_t m = 0xc6a4a793;
+  const uint32_t r = 24;
+  const char* limit = data + n;
+  uint32_t h = seed ^ (n * m);
+
+  // Pick up four bytes at a time
+  while (data + 4 <= limit) {
+    uint32_t w = DecodeFixed32(data);
+    data += 4;
+    h += w;
+    h *= m;
+    h ^= (h >> 16);
+  }
+
+  // Pick up remaining bytes
+  switch (limit - data) {
+  case 3:
+    h += data[2] << 16;
+    FALLTHROUGH_INTENDED;
+  case 2:
+    h += data[1] << 8;
+    FALLTHROUGH_INTENDED;
+  case 1:
+    h += data[0];
+    h *= m;
+    h ^= (h >> r);
+    break;
   }
   return h;
 }
+
+// uint32_t Hash(const char* data, size_t n) {
+//   const static int FNV_32_PRIME = 0x01000193;
+//   const static int FNV_32_INIT = 0x811c9dc5;
+
+//   uint32_t h = FNV_32_INIT;
+//   for (size_t i = 0; i < n; i++) {
+//     h ^= (uint32_t) data[i];
+//     h *= FNV_32_PRIME;
+//   }
+//   return h;
+// }
 
 class ScopedFile {
  public:
