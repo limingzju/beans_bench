@@ -61,7 +61,7 @@ static int FLAGS_reads = 100;
 static int FLAGS_value_size = 100000; // 100KB
 static bool FLAGS_histogram = false;
 static int FLAGS_num_threads = 1;
-static bool FLAGS_use_existing_db = false;
+static bool FLAGS_use_existing_db = true;
 static int FLAGS_filesystem_ndir = 1;
 static double FLAGS_read_write_ratio = 1;
 
@@ -322,24 +322,19 @@ class FileSystemDB : public DB {
             status = Env::CreateDir(fullname);
             if (!status) return false;
           }
+          for (int j = 0; j < 1000; j++) {
+            snprintf(fullname, sizeof(fullname), "%s/%d/%d", base_path.c_str(), i, j);
+            // printf("Create dir %s\n", fullname);
+            if (!Env::FileExists(fullname)) {
+              status = Env::CreateDir(fullname);
+              if (!status) return false;
+            }
+          }
         }
       }
     } else {
-      if (Env::FileExists(base_path)) {
-        status = Env::DeleteDir(base_path);
-        if (!status) return false;
-      }
-
-      status = Env::CreateDir(base_path);
-      if (!status) return false;
-
-      // Create subdir 0 ... ndir-1
-      for (int i = 0; i < ndir; i++) {
-        char fullname[256];
-        snprintf(fullname, sizeof(fullname), "%s/%d", base_path.c_str(), i);
-        status = Env::CreateDir(fullname);
-        if (!status) return false;
-      }
+      fprintf(stderr, "use_existing_db must be true\n");
+      exit(1);
     }
     return true;
   }
@@ -347,10 +342,11 @@ class FileSystemDB : public DB {
   bool Put(const Slice& key, const Slice& value) {
     uint32_t hash  = Hash(key.data(), key.size());
     int segment = hash % ndir_;
+    int segment2 = (hash >> 16) % 1000;
     char filename[512];
     char filename_tmp[512];
-    snprintf(filename, sizeof(filename), "%s/%d/%s", base_path_.c_str(), segment, key.data());
-    snprintf(filename_tmp, sizeof(filename_tmp), "%s/%d/%s.tmp", base_path_.c_str(), segment, key.data());
+    snprintf(filename, sizeof(filename), "%s/%d/%d/%s", base_path_.c_str(), segment, segment2, key.data());
+    snprintf(filename_tmp, sizeof(filename_tmp), "%s/%d/%d/%s.tmp", base_path_.c_str(), segment, segment2, key.data());
     // File System Put is very ineffienct
     // We write it to a temp file then rename it
     // There are some problem with the filename_tmp, because may be multiple
@@ -382,8 +378,10 @@ class FileSystemDB : public DB {
   bool Get(const Slice& key, std::string* value) {
     uint32_t hash = Hash(key.data(), key.size());
     int segment = hash % ndir_;
+    int segment2 = (hash >> 16) % 1000;
+
     char filename[512];
-    snprintf(filename, sizeof(filename), "%s/%d/%s", base_path_.c_str(), segment, key.data());
+    snprintf(filename, sizeof(filename), "%s/%d/%d/%s", base_path_.c_str(), segment, segment2, key.data());
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
       return false;
@@ -858,7 +856,7 @@ class Benchmark {
 
 void TEST_FDB() {
   FileSystemDB fdb;
-  ASSERT_TRUE(fdb.Open("./fdb", 5, false));
+  ASSERT_TRUE(fdb.Open("./fdb", 5, true));
 
   for (int i = 0; i < 1000; i++) {
     char key[64];
@@ -927,7 +925,7 @@ void TEST_BEANSDB() {
       printf("value = %s, key=%s\n", value.c_str(), key);
     }
   }
-  printf("test passed\n");
+  printf("beansdb test passed\n");
 }
 
 void* StatsThread(void* args) {
