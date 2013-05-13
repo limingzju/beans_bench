@@ -22,6 +22,8 @@
 // c++
 #include <string>
 
+#include <google/profiler.h>
+
 // third lib
 //#include <boost/scoped_ptr.hpp>
 
@@ -542,7 +544,7 @@ struct ThreadState {
 
   ThreadState(int index)
       : tid(index),
-      rand(static_cast<int>(time(NULL)))
+      rand(static_cast<int>(time(NULL)) + index)
       /* rand(1000 + index) */{
       }
 };
@@ -576,6 +578,7 @@ class Benchmark {
     std::vector<std::string> strs;
     split_string(FLAGS_benchmarks, ',', &strs);
 
+//    ProfilerStart("db_bench.prof");
     for (size_t i = 0; i < strs.size(); i++) {
       method = NULL;
       size_t j;
@@ -589,6 +592,7 @@ class Benchmark {
         RunBenchMark(FLAGS_num_threads, Slice(functions[j]), method);
       }
     }
+//    ProfilerStop();
 
     g_exit = 1;
     fprintf(stdout, "RUN TEST DONE\n");
@@ -604,6 +608,7 @@ class Benchmark {
   };
 
   static void* ThreadBody(void* v) {
+//    ProfilerRegisterThread();
     ThreadArg* arg = reinterpret_cast<ThreadArg*>(v);
     SharedState* shared = arg->shared;
     ThreadState* thread = arg->thread;
