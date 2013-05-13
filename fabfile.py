@@ -3,6 +3,13 @@ from fabric.state import output
 
 env.sudo_prefix='sudo -iu dfs '
 
+@hosts('hzliming2013@inspur113.photo.163.org')
+def upload(*args):
+    fname = args[0]
+    put(fname, '~/')
+    orignal = '/home/styxhome/hzliming2013/'
+    run('sudo -iu dfs cp %s/%s /mnt/dfs/1/dbtest' %(orignal, fname))
+
 @hosts('hzliming2013@inspur112.photo.163.org')
 def compile():
     run('rm ~/beans_bench.tar.gz')
@@ -15,6 +22,19 @@ def compile():
     run('mkdir build')
     with cd('build'):
         run('~/local/bin/cmake ../beans_bench && make')
+    get('~/build/db_bench', '.')
+
+@hosts('hzliming2013@inspur113.photo.163.org')
+def upload113():
+    run('sudo -iu dfs mkdir -p /mnt/dfs/1/backup')
+    #run('sudo -iu dfs mv /mnt/dfs/1/{bench.py,db_bench} /mnt/dfs/1/backup')
+    upload('bench.py', '.')
+    upload('db_bench', '.')
+    home = '/home/styxhome/hzliming2013/'
+    run('sudo -iu dfs cp %s/bench.py /mnt/dfs/1/' %home)
+    run('sudo -iu dfs cp %s/db_bench /mnt/dfs/1/' %home)
+    run('sudo -iu dfs chmod a+x /mnt/dfs/1/bench.py')
+    run('sudo -iu dfs chmod a+x /mnt/dfs/1/db_bench')
 
 @hosts('hzliming2013@inspur112.photo.163.org')
 def test():
