@@ -36,6 +36,18 @@ def upload113():
     run('sudo -iu dfs chmod a+x /mnt/dfs/1/bench.py')
     run('sudo -iu dfs chmod a+x /mnt/dfs/1/db_bench')
 
+@hosts('hzliming2013@inspur114.photo.163.org')
+def upload114():
+    run('sudo -iu dfs mkdir -p /mnt/dfs/11/liming/backup')
+    upload('bench.py', '.')
+    upload('db_bench', '.')
+    home='/home/styxhome/hzliming2013/'
+    run('sudo -iu dfs cp %s/bench.py /mnt/dfs/11/liming' %home)
+    run('sudo -iu dfs cp %s/db_bench /mnt/dfs/11/liming' %home)
+    run('sudo -iu dfs chmod a+x /mnt/dfs/11/liming/bench.py')
+    run('sudo -iu dfs chmod a+x /mnt/dfs/11/liming/db_bench')
+
+
 @hosts('hzliming2013@inspur112.photo.163.org')
 def test():
     print env

@@ -160,7 +160,7 @@ def main():
         beans_read('beansdb', int(100e3), 4)
     elif sys.argv[1] == 'fs':
         value_size = int(100e3)
-        fs_read(value_size, 4)
+        #fs_read(value_size, 4)
         fs_read_write_case('fdb')
     elif sys.argv[1] == 'fs_read':
         value_size = int(100e3)
