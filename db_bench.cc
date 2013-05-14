@@ -22,7 +22,7 @@
 // c++
 #include <string>
 
-#include <google/profiler.h>
+// #include <google/profiler.h>
 
 // third lib
 //#include <boost/scoped_ptr.hpp>
@@ -544,8 +544,8 @@ struct ThreadState {
 
   ThreadState(int index)
       : tid(index),
-      rand(static_cast<int>(time(NULL)) + index)
-      /* rand(1000 + index) */{
+	/*rand(static_cast<int>(time(NULL)) + index)*/
+      rand(1000 + index) {
       }
 };
 
