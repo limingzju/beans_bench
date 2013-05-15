@@ -19,4 +19,6 @@ add_executable(db_bench db_bench.cc histogram.cc concurrent.cc string_util.cc)
 #target_link_libraries(db_bench beansdb libprofiler.a pthread)
 target_link_libraries(db_bench beansdb  pthread)
 
+install(FILES bench.py DESTINATION .)
+
 
