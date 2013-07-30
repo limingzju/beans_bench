@@ -11,6 +11,7 @@
 // c++
 #include <string>
 
+// Copy from leveldb
 class Slice {
  public:
   Slice() : data_(""),size_(0) { }

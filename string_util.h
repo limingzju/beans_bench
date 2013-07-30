@@ -6,6 +6,7 @@
 
 #include "slice.h"
 
+// split string
 void split_string(const std::string& str,
                   char sep,
                   std::vector<std::string>* stringlist);
