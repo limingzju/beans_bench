@@ -1,4 +1,4 @@
 beans_bench
 ===========
 
-A bench mark between beansdb and filesystem.
+A bench mark between beansdb and local filesystem.
